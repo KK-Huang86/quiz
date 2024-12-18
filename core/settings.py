@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
+
 
 
 
@@ -41,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'Urmart',
+    'django_celery_results',
+    'django_celery_beat'
+
 
 ]
 
@@ -110,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Taipei'
 
 USE_I18N = True
 
@@ -126,3 +131,56 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+#---
+
+# Caching settings using Redis
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    },
+}
+
+# Celery settings
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+
+# Set timezone to Taipei
+CELERY_ENABLE_UTC = False
+TIME_ZONE = "Asia/Taipei"
+# django_celery_beat uses UTC by default, so set it to False to use local timezone
+DJANGO_CELERY_BEAT_TZ_AWARE = False
+
+# Task time limit
+CELERY_TASK_TIME_LIMIT = 5
+
+# Store task result and status in the Django database
+CELERY_RESULT_BACKEND = "django-db"
+
+# Content format for Celery tasks
+CELERY_ACCEPT_CONTENT = [
+    "application/json",
+]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+
+# Store extended result
+CELERY_RESULT_EXTENDED = True
+
+# Celery Beat scheduler
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# Celery Beat schedule for periodic tasks
+CELERY_BEAT_SCHEDULE = {
+    "test_task1": {
+        "task": "website.tasks.test_task",
+        "schedule": crontab(minute=0, hour=00),
+    },
+    "test_task2": {
+        "task": "website.tasks.test_task",
+        "schedule": 60,  # Run every 60 seconds
+    },
+}
