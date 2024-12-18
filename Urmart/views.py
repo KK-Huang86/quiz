@@ -1,5 +1,3 @@
-
-
 from .models import Order,Product
 from .serializers import ProductSerializer,OrderSerializer
 from .decorators import check_vip_identity, check_stock
@@ -8,8 +6,7 @@ from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.response import Response
 
-
-class OrderViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,viewsets.GenericViewSet):
+class OrderViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,mixins.ListModelMixin,viewsets.GenericViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
@@ -32,4 +29,8 @@ class OrderViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,viewsets.Gen
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Order.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['get'])
+    def top_three_product(self,request):
+        top_product=(Order.objects.values('product__id').annotate(total_sales=sum('qty')).order_by('-total_sales')[:3])
 
