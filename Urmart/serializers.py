@@ -39,4 +39,5 @@ class OrderSerializer(serializers.ModelSerializer):
             # 在創建訂單時，減少商品庫存
             self.update_product_stock(product, qty, action='remove')  # 減少庫存
             validated_data['member_id'] = member.id
+            validated_data['price'] = product.price * qty
             return Order.objects.create(**validated_data)

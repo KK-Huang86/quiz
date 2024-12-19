@@ -44,7 +44,7 @@ class OrderViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,mixins.ListM
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['get'])
-    def top_three_product(self,request):
+    def top_three_product(self):
         top_products=(Order.objects.values('product__id').annotate(total_sales=Sum('qty')).order_by('-total_sales')[:3])
 
         data = [
