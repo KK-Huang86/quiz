@@ -6,9 +6,14 @@ from Urmart.models import Product
 
 def check_vip_identity(view_func):
     @wraps(view_func)
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_authenticated or request.user.is_vip:
-            return HttpResponse("您不符合VIP資格",status=403)
+    def wrapper(request, product_id, *args, **kwargs):
+        print(f'============================request {request}, product_id {product_id}')
+        try:
+            product=Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return HttpResponse("商品不存在",status=404)
+        if not product.is_vip:
+            return  HttpResponse("商品不符合VIP資格",status=403)
         return view_func(request, *args, **kwargs)
     return wrapper
 

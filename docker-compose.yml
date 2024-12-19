@@ -1,0 +1,27 @@
+version: '3.5'
+
+services:
+  quiz-db:
+    container_name: quiz_db
+    image: postgres:13
+    environment:
+      POSTGRES_DB: quiz_test
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./db/postgresql/pg-data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+  quiz:
+    build: ./
+    container_name: quiz
+    volumes:
+      - ./quiz/:/app:rw
+    ports:
+      - "8000:8000"
+    depends_on:
+      - quiz-db
+    environment:
+      ENV: local
+      USE_RESPONSE_CACHE: true
+
