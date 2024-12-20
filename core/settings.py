@@ -175,11 +175,11 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Celery Beat schedule for periodic tasks
 CELERY_BEAT_SCHEDULE = {
     "test_task1": {
-        "task": "website.tasks.test_task",
+        "task": "Urmart.task.test_task",
         "schedule": crontab(minute=0, hour=00),
     },
     "test_task2": {
-        "task": "website.tasks.test_task",
+        "task": "Urmart.task.test_task",
         "schedule": 60,  # Run every 60 seconds
     },
 }

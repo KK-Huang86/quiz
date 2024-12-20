@@ -10,8 +10,11 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from rest_framework import serializers
 from django.db import transaction
-
-
+from celery import Celery
+import requests,os,datetime
+import pytz
+from .task import test_task
+from rest_framework import permissions, views, status
 
 
 class MemberViewSet(viewsets.ModelViewSet):
@@ -86,4 +89,26 @@ class OrderViewSet(mixins.CreateModelMixin,mixins.DestroyModelMixin,mixins.ListM
         return Response(data, status=status.HTTP_200_OK)
 
 
+class test_async_task(views.APIView):
+    permission_classes = (permissions.AllowAny,)
+    authentication_classes = []
 
+    def post(self, request):
+        id = request.data.get('id')
+
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
+        app = Celery("core")
+        app.config_from_object("django.conf:settings", namespace="CELERY")
+        app.autodiscover_tasks()
+
+        local_timezone = pytz.timezone("Asia/Taipei")
+        now = datetime.datetime.now()
+        # 60秒後執行
+        exec_time = now + datetime.timedelta(seconds=60)
+        # 利用 pytz 進行轉換
+        exec_time = local_timezone.localize(exec_time)
+
+        # apply_async 異步執行，多進程安排執行任務，eta時間差，這邊是60秒後執行
+        test_task.apply_async(args=(id,), eta=exec_time)
+
+        return Response({"success": True, "message": "執行成功"}, status=status.HTTP_200_OK)

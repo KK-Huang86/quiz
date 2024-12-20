@@ -1,5 +1,8 @@
 from Urmart import views
 from django.urls import path,include
+from django.views.decorators.csrf import csrf_exempt
+from .views import test_async_task
+
 from rest_framework.urlpatterns import format_suffix_patterns
 
 # urlpatterns = [
@@ -18,6 +21,8 @@ router.register(r'products', ProductViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('api/test_task',csrf_exempt(test_async_task.as_view()),name='api-test_task'),
+
 ]
 
 # urlpatterns = [
