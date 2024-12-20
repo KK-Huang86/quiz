@@ -12,7 +12,7 @@ class Product(models.Model):
         (3,"ps")
     )
     shop_id = models.PositiveIntegerField(choices=shop_choice,default=1)
-    is_vip = models.BooleanField(default=False,null=True)
+    is_vip = models.BooleanField(default=False,null=False)
 
     def __str__(self):
         return f"商品id:{self.id} 庫存:{self.stock_pcs} 價格:{self.price}"

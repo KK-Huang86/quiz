@@ -1,5 +1,5 @@
 from Urmart import views
-from django.urls import path
+from django.urls import path,include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 # urlpatterns = [
@@ -10,11 +10,20 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.routers import DefaultRouter
 from .views import OrderViewSet,MemberViewSet,ProductViewSet
 
-# 创建 DefaultRouter 实例
 router = DefaultRouter()
 
 router.register(r'orders', OrderViewSet, basename='order')
 router.register(r'members', MemberViewSet)
 router.register(r'products', ProductViewSet)
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('', include(router.urls)),
+]
+
+# urlpatterns = [
+#     path('orders/order_create/', OrderViewSet.as_view({'post': 'create'})),
+#     path('orders/<int:pk>/order_delete/', OrderViewSet.as_view({'delete': 'order_delete'})),
+# ]
+#
+#
+# urlpatterns += router.urls
