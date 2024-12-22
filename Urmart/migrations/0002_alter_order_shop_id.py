@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Urmart', '0001_initial'),
+        ("Urmart", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='order',
-            name='shop_id',
-            field=models.PositiveIntegerField(choices=[(1, 'um'), (2, 'ms'), (3, 'ps')], default=1),
+            model_name="order",
+            name="shop_id",
+            field=models.PositiveIntegerField(
+                choices=[(1, "um"), (2, "ms"), (3, "ps")], default=1
+            ),
         ),
     ]

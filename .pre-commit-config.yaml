@@ -1,0 +1,21 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+    -   id: trailing-whitespace
+        name: 去除空白
+        exclude: '^migrations/'
+
+-   repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+    -   id: black
+        name: 格式化
+        exclude: '^migrations/'
+
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+    -   id: isort
+        name: 排序
+        exclude: '^migrations/'

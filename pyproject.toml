@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "quiz_12_17"  
+name = "quiz_12_17"
 version = "0.1.0"
 description = ""
 authors = ["KK-Huang86 <iankk0806@gmail.com>"]
