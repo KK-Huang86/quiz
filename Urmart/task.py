@@ -6,6 +6,8 @@ from .models import  ShopSalesStats,Order
 from django.db import models
 from django.db.models import Sum, Count,F
 from django.db.models.functions import Cast
+import csv
+import os
 
 app = Celery("Urmart")
 
@@ -55,3 +57,32 @@ def generate_shop_sales_stats():
             }
         )
         print(f"Shop {shop_id}: Sales={total_sales_amount}, Qty={total_qty}, Orders={total_orders}")
+
+    base_path = '/Users/rd/Desktop/quiz_12_17'
+
+    # 目標資料夾
+    folder_path = os.path.join(base_path, f'shop_sales_{today}')
+
+    # 如果資料夾不存在，則創建它
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+
+    # 最終的 CSV 檔案路徑
+    file_path = os.path.join(folder_path, f'shop_sales_{today}.csv')
+
+    try:
+        with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+            writer = csv.writer(file)
+            writer.writerow(['Shop ID', 'Total Sales Amount', 'Total Quantity', 'Total Orders', 'Date'])
+
+            for stat in shop_stats:
+                writer.writerow([
+                    stat['shop_id'],
+                    stat['total_sales_amount'],
+                    stat['total_qty'],
+                    stat['total_orders'],
+                    today
+                ])
+            print("寫入成功")
+    except Exception as e:
+        print(f"寫入CSV檔案時發生錯誤: {e}")
