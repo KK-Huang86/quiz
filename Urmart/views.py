@@ -1,9 +1,7 @@
 import datetime
 import os
-from pickle import FALSE
 
 import pytz
-import requests
 from celery import Celery
 from django.db import transaction
 from django.db.models import Sum
@@ -16,7 +14,6 @@ from .decorators import check_vip_identity
 from .models import Member, Order, Product
 from .serializers import MemberSerializer, OrderSerializer, ProductSerializer
 from .task import test_task
-from celery import shared_task
 
 
 class MemberViewSet(viewsets.ModelViewSet):
