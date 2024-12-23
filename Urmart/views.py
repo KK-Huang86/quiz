@@ -39,15 +39,16 @@ class OrderViewSet(
     serializer_class = OrderSerializer
 
     @check_vip_identity
-    @action(detail=False, methods=["post"])
     # @check_stock
-    def order_create(self, request, pk=None):
+    def create(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            validated_data = serializer.validated_data
+            validated_data = serializer.validated_data #取出 serializer 過的資料
             product = validated_data["product"]
             qty = validated_data["qty"]
+            price = validated_data["price"]
             member = validated_data["member_id"]
+            total_price = qty * price
             # 庫存檢查
             if product.stock_pcs <= 0:
                 return Response(
@@ -63,7 +64,7 @@ class OrderViewSet(
                 product.save()
 
             # 計算訂單價格
-            validated_data["price"] = product.price * qty
+            validated_data["total_price"] = total_price
             # 設定會員ID
             validated_data["member_id"] = member.id
 
@@ -72,9 +73,17 @@ class OrderViewSet(
             return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=True, methods=["delete"])
-    # @check_stock
-    def order_delete(self, request, pk):
+    def retrieve(self, request, pk=None):
+        try:
+            order = Order.objects.get(pk=pk)
+            return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+
+        except Order.DoesNotExist:
+            return Response({"error":"該訂單不存在"},status=status.HTTP_404_NOT_FOUND)
+
+
+    #@check_stock
+    def destroy(self, request, pk):
         try:
             order = Order.objects.get(id=pk)
             product = order.product

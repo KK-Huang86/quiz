@@ -22,7 +22,7 @@ def generate_shop_sales_stats():
     shop_stats = (
         Order.objects.filter(created_at__date=today).values('shop_id').annotate(
             total_sales_amount=Sum(Cast(F('qty'), models.DecimalField()) * Cast(F('price'), models.DecimalField())),
-            total_qty=Count('qty'),
+            total_qty=Sum('qty'),
             total_orders=Count('id')
         )
     )

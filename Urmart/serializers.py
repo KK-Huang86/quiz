@@ -22,7 +22,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "product", "qty", "price", "shop_id", "member_id"]
+        fields = ["id", "product", "qty", "price","total_price", "shop_id", "member_id"]
 
     # def update_product_stock(self, product,qty,action):
     #     with transaction.atomic(): #原子操作
