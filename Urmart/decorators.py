@@ -1,22 +1,20 @@
+import json
 from functools import wraps
 
 from django.http import HttpResponse
 
 from Urmart.models import Product
-import json
 
 
 def check_vip_identity(view_func):
     @wraps(view_func)
     def wrapper(*args, **kwargs):
-        request = kwargs.get('request')
+        request = kwargs.get("request")
         print(request)
         for arg in args:
             print(arg)
-        print('args',args)
-        print('kwargs',kwargs)
-
-
+        print("args", args)
+        print("kwargs", kwargs)
 
         # request_data = {
         #     'method': request.method,
@@ -26,7 +24,7 @@ def check_vip_identity(view_func):
         #     'headers': dict(request.headers),
         # }
         # print(json.dumps(request_data, indent=4))
-        print(f'dir(request): {dir(request)}')
+        print(f"dir(request): {dir(request)}")
 
         # print(f'request: {request}, {request.__dict__}')
         # product_id = kwargs.get("product_id")
@@ -38,7 +36,7 @@ def check_vip_identity(view_func):
         #     return HttpResponse("商品不存在", status=404)
         # if product.is_vip:
         #     return HttpResponse("商品符合VIP資格，您無法購買", status=403)
-        return view_func( *args, **kwargs)
+        return view_func(*args, **kwargs)
 
     return wrapper
 

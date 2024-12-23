@@ -19,10 +19,21 @@ class MemberSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
     member_id = serializers.PrimaryKeyRelatedField(queryset=Member.objects.all())
+    total_price = serializers.DecimalField(
+        max_digits=10, decimal_places=0, read_only=True
+    )
 
     class Meta:
         model = Order
-        fields = ["id", "product", "qty", "price","total_price", "shop_id", "member_id"]
+        fields = [
+            "id",
+            "product",
+            "qty",
+            "price",
+            "shop_id",
+            "member_id",
+            "total_price",
+        ]
 
     # def update_product_stock(self, product,qty,action):
     #     with transaction.atomic(): #原子操作

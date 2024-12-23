@@ -143,7 +143,7 @@ CACHES = {
 # Celery settings
 from celery.schedules import crontab
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"  #redis
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"  # redis
 
 # Set timezone to Taipei
 CELERY_ENABLE_UTC = False
@@ -181,6 +181,3 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute=00, hour=00),
     },
 }
-
-
-

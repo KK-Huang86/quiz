@@ -40,7 +40,7 @@ class OrderViewSet(
     def create(self, request, pk=None):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            validated_data = serializer.validated_data #取出 serializer 過的資料
+            validated_data = serializer.validated_data  # 取出 serializer 過的資料
             product = validated_data["product"]
             qty = validated_data["qty"]
             price = validated_data["price"]
@@ -76,10 +76,9 @@ class OrderViewSet(
             return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 
         except Order.DoesNotExist:
-            return Response({"error":"該訂單不存在"},status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
 
-
-    #@check_stock
+    # @check_stock
     def destroy(self, request, pk):
         try:
             order = Order.objects.get(id=pk)
@@ -113,6 +112,7 @@ class OrderViewSet(
 
 # celery 異步任務
 
+
 class test_async_task(views.APIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = []
@@ -138,6 +138,8 @@ class test_async_task(views.APIView):
         return Response(
             {"success": True, "message": "執行成功"}, status=status.HTTP_200_OK
         )
+
+
 #
 # @shared_task()
 # def test_task(id):
