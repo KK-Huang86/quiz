@@ -11,7 +11,7 @@ router.register(r"members", MemberViewSet)
 router.register(r"products", ProductViewSet)
 
 urlpatterns = [
-    path("api", include(router.urls)),
+    path("api/", include(router.urls)),
     path("api/test_task", csrf_exempt(test_async_task.as_view()), name="api-test_task"),
 ]
 
