@@ -7,11 +7,11 @@ from django.db import transaction
 from django.db.models import Sum
 from rest_framework import (mixins, permissions, serializers, status, views,
                             viewsets)
-from rest_framework.request import Request
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .decorators import check_vip_identity,check_stock
+from .decorators import check_stock, check_vip_identity
 from .models import Member, Order, Product
 from .serializers import MemberSerializer, OrderSerializer, ProductSerializer
 from .task import test_task
@@ -36,11 +36,10 @@ class OrderViewSet(
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-
     @check_vip_identity
     @check_stock
     def create(self, request, pk=None):
-        data=request.data
+        data = request.data
         serializer = self.get_serializer(data=data)
         if serializer.is_valid(raise_exception=True):
             validated_data = serializer.validated_data  # 取出 serializer 過的資料
@@ -142,9 +141,3 @@ class test_async_task(views.APIView):
         return Response(
             {"success": True, "message": "執行成功"}, status=status.HTTP_200_OK
         )
-
-
-#
-# @shared_task()
-# def test_task(id):
-#     user_email="hsinkai@urmart.com"

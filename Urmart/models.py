@@ -21,7 +21,6 @@ class Member(models.Model):
     id = models.AutoField(primary_key=True)
     member_name = models.CharField(max_length=100, null=False, default="")
 
-
     def __str__(self):
         return f"會員號碼 : {self.id} 名字: {self.member_name}"
 

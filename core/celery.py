@@ -12,8 +12,8 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-#排程時區
-app.conf.timezone = 'Asia/Taipei'
+# 排程時區
+app.conf.timezone = "Asia/Taipei"
 app.conf.enable_utc = False
 
 

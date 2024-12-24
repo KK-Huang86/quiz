@@ -1,12 +1,10 @@
 from functools import wraps
-from rest_framework.response import Response
+
 from rest_framework import status
 from rest_framework.request import Request
+from rest_framework.response import Response
 
-
-
-from Urmart.models import Product,Member
-
+from Urmart.models import Member, Product
 
 # def check_vip_identity(view_func):
 #     @wraps(view_func)
@@ -68,8 +66,6 @@ from Urmart.models import Product,Member
 #     return wrapper
 
 
-
-
 def check_vip_identity(view_func):
     @wraps(view_func)
     def wrapper(view_instance, request, *args, **kwargs):
@@ -77,7 +73,7 @@ def check_vip_identity(view_func):
             return Response({"error": "無效的請求"}, status=status.HTTP_400_BAD_REQUEST)
 
         data = request.data
-        product_id = data.get('product')
+        product_id = data.get("product")
 
         if product_id:
             try:
@@ -88,11 +84,14 @@ def check_vip_identity(view_func):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
             except Product.DoesNotExist:
-                return Response({"error": "商品不存在"}, status=status.HTTP_404_NOT_FOUND)
+                return Response(
+                    {"error": "商品不存在"}, status=status.HTTP_404_NOT_FOUND
+                )
 
         return view_func(view_instance, request, *args, **kwargs)
 
     return wrapper
+
 
 # def check_stock(view_func):
 #     @wraps(view_func)
@@ -126,19 +125,21 @@ def check_vip_identity(view_func):
 
 def check_stock(view_func):
     @wraps(view_func)
-    def wrapper( view_instance,request, *args, **kwargs):
+    def wrapper(view_instance, request, *args, **kwargs):
         if not isinstance(request, Request):
             return Response({"error": "無效的請求"}, status=400)
 
         data = request.data
-        product_id = data.get('product')
-        qty = data.get('qty')
+        product_id = data.get("product")
+        qty = data.get("qty")
 
-        if view_instance.action == 'destroy':
+        if view_instance.action == "destroy":
             return view_func(view_instance, request, *args, **kwargs)
 
         if not product_id or qty is None:
-            return Response({"error": "缺少商品或數量資訊"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "缺少商品或數量資訊"}, status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             qty = int(qty)
             product = Product.objects.get(id=product_id)
@@ -147,6 +148,6 @@ def check_stock(view_func):
 
         if product.stock_pcs < qty:
             return Response("商品庫存不夠，無法購買", status=404)
-        return view_func(request,view_instance, *args, **kwargs)
+        return view_func(view_instance, request, *args, **kwargs)
 
     return wrapper
