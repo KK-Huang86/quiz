@@ -69,7 +69,7 @@ def generate_shop_sales_stats():
             f"Shop {shop_id}: Sales={total_sales_amount}, Qty={total_qty}, Orders={total_orders}"
         )
 
-    base_path = "/Users/rd/Desktop/quiz_12_17"
+    base_path = "/Users/rd/Desktop/quiz_12_17/data"
 
     # 目標資料夾
     folder_path = os.path.join(base_path, f"shop_sales_{today}")

@@ -9,3 +9,4 @@ db.sqlite3
 *.pdf
 staticfiles/
 core/settings_local.py
+.coverage

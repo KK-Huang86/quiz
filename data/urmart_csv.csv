@@ -1,8 +1,0 @@
-product _id,stock_pcs,price,shop_id,vip
-1,6,150,um,FALSE
-2,10,110,ms,FALSE
-3,20,900,ps,FALSE
-4,2,1899,ps,TRUE
-5,8,35,ms,FALSE
-6,5,60,um,FALSE
-7,5,800,ps,TRUE

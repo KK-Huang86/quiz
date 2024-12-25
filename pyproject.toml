@@ -9,17 +9,19 @@ readme = "README.md"
 python = "^3.13"
 django = "^5.1.4"
 djangorestframework = "^3.15.2"
-drf-yasg = "^1.21.8"
-psycopg2-binary = "^2.9.10"
-django-dotenv = "^1.4.2"
-python-dotenv = "^1.0.1"
 celery = "^5.4.0"
 django-celery-results = "^2.5.1"
 django-celery-beat = "^2.7.0"
 django-redis = "^5.4.0"
+pytz = "^2024.2"
+pytest = "^8.3.4"
+pytest-sugar = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 commitizen = "^4.1.0"
+pytest-cov = "^6.0.0"
+pytest-django = "^4.9.0"
+pytest = "^8.3.4"
 
 [build-system]
 requires = ["poetry-core"]
