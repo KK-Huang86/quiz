@@ -1,5 +1,5 @@
 import csv
-import datetime
+from datetime import datetime,timedelta
 import os
 from os import stat
 
@@ -20,9 +20,10 @@ def test_task():
 
 @shared_task()
 def generate_shop_sales_stats():
-    today = datetime.date.today()  # 抓出符合當天的訂單資料
+    today = datetime.now().date()
+    yesterday = today - timedelta(days=1) #抓出昨天的銷售資料
     shop_stats = (
-        Order.objects.filter(created_at__date=today)
+        Order.objects.filter(created_at__date=yesterday)
         .values("shop_id")
         .annotate(
             total_sales_amount=Sum(
@@ -100,7 +101,7 @@ def generate_shop_sales_stats():
                         stat["total_sales_amount"],
                         stat["total_qty"],
                         stat["total_orders"],
-                        today,
+                        yesterday,
                     ]
                 )
             print("寫入成功")
