@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "Urmart",
     "django_celery_results",
     "django_celery_beat",
+
 ]
 
 MIDDLEWARE = [

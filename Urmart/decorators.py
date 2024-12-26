@@ -70,7 +70,7 @@ def check_vip_identity(view_func):
     @wraps(view_func)
     def wrapper(view_instance, request, *args, **kwargs):
         if not isinstance(request, Request):
-            return Response({"error": "無效的請求"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "無效的請求"}, status=status.HTTP_400_BAD_REQUEST) #確保 request是否為DRF中Request類型
 
         data = request.data
         product_id = data.get("product")
@@ -147,7 +147,7 @@ def check_stock(view_func):
             return Response("商品不存在", status=404)
 
         if product.stock_pcs < qty:
-            return Response("商品庫存不夠，無法購買", status=404)
+            return Response("商品庫存不夠，無法購買", status=400)
         return view_func(view_instance, request, *args, **kwargs)
 
     return wrapper

@@ -14,7 +14,7 @@ app = Celery("Urmart")
 
 
 @shared_task()
-def test_task():
+def test_task(id):
     print("---------這是測試，測試成功-------{id}，")
 
 
