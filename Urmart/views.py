@@ -5,10 +5,9 @@ import pytz
 from celery import Celery
 from django.db import transaction
 from django.db.models import Sum
-from rest_framework import (mixins, permissions, serializers, status, views,
+from rest_framework import (mixins, permissions, status, views,
                             viewsets)
 from rest_framework.decorators import action
-from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .decorators import check_stock, check_vip_identity
@@ -49,15 +48,6 @@ class OrderViewSet(
             member = validated_data["member_id"]
             total_price = qty * price
 
-            # 庫存檢查
-            if product.stock_pcs <= 0:
-                return Response(
-                    {"error": "目前庫存不足"}, status=status.HTTP_400_BAD_REQUEST
-                )
-            if product.stock_pcs < qty:
-                return Response(
-                    {"error": "庫存不足，無法下單"}, status=status.HTTP_400_BAD_REQUEST
-                )
             # 減少商品庫存
             with transaction.atomic():  # 保證原子操作
                 product.stock_pcs -= qty
