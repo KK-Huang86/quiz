@@ -3,6 +3,8 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+from django.db import transaction
+
 
 # Create your models here.
 
@@ -96,17 +98,30 @@ class OrderItem(models.Model):
     )
 
     def save(self, *args, **kwargs):
-        # 計算子訂單價格
-        if not self.price:
-            self.price = self.product.price
-        self.subtotal = self.qty * self.price
-        super().save(*args, **kwargs)
-        # 同時更新總金額
-        self.order.calculate_total_price()
+        with transaction.atomic():
+            # 恢復舊的庫存
+            if self.pk:
+                old_order_item = OrderItem.objects.get(pk=self.pk)
+                old_order_item.adjust_stock(self.qty)
+            # 計算子訂單價格
+            if not self.price:
+                #商品的價格由product進行連動
+                self.price = self.product.price
+            self.subtotal = self.qty * self.price
+            super().save(*args, **kwargs)
+            # 同時更新總金額
+            self.order.calculate_total_price()
 
     def delete(self, *args, **kwargs):
+        self.adjust_stock(self.qty)
         super().delete(*args, **kwargs)
         self.order.calculate_total_price()
+
+    def adjust_stock(self,qty):
+        if self.product.stock_pcs + qty < 0:
+            raise ValidationError(f"庫存不足，當前庫存為 {self.product.stock_pcs}，無法減少 {abs(qty)} 件。")
+        self.product.stock_pcs += qty
+        self.save()
 
     def __str__(self):
         return f'Order:{self.id}, Product:{self.product.id}, Qty:{self.qty} , Price:{self.price} , Subtotal:{self.subtotal}'

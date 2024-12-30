@@ -9,7 +9,7 @@ from rest_framework import mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .decorators import check_stock, check_vip_identity
+from .decorators import check_vip_identity
 from .models import Member, Order, OrderItem, Product, Shop
 from .serializers import (MemberSerializer, OrderItemSerializer,
                           OrderSerializer, ProductSerializer, ShopSerializer)
@@ -39,18 +39,20 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 class OrderViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
+    mixins.UpdateModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-    @check_vip_identity
-    # @check_stock
+    # @check_vip_identity
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        order = serializer.save()  # 呼叫 serializer 的 create 方法
+
+        order = serializer.save()
+        order.calculate_total_price()# 呼叫 serializer 的 create 方法
         return Response(self.get_serializer(order).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
@@ -62,18 +64,39 @@ class OrderViewSet(
         except Order.DoesNotExist:
             return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
 
-    @check_stock
+
+    def update(self, request, pk=None):
+        try:
+
+            order = Order.objects.get(pk=pk)
+            serializer = self.get_serializer(order, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            updated_order = serializer.save()
+            updated_order.calculate_total_price()  # 更新總金額
+            return Response(self.get_serializer(updated_order).data, status=status.HTTP_200_OK)
+
+        except Order.DoesNotExist:
+            return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
+
+
     def destroy(self, request, pk):
         try:
-            order = Order.objects.get(id=pk)
-            product = order.product
-            qty = order.qty
-            product.stock_pcs += qty
-            product.save()
+            # 查詢並刪除訂單
+            order = Order.objects.get(pk=pk)
+            order_items = order.items.all()
+
+            # 恢復庫存
+            for item in order_items:
+                item.adjust_stock(item.qty)  # 恢復庫存
+
+            # 刪除訂單項目和訂單
+            order_items.delete()
             order.delete()
+
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Order.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
+
 
     @action(detail=False, methods=["get"])
     def top_three_products(self, request):

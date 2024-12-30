@@ -23,14 +23,33 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product=serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+
     class Meta:
         model = OrderItem
         fields = ["product", "qty", "price", "subtotal"]
+        read_only_fields = ["price", "subtotal"]
 
+    def validate(self, data):
+        product=data.get("product")
+        qty=data.get("qty")
+
+        if product and product.stock_pcs < qty:
+            raise serializers.ValidationError(f'{product.name} 商品庫存不足，僅剩{product.stock_pcs} 件可用')
+        return data
+
+    def create(self, validated_data):
+        product = validated_data.get('product')
+        qty = validated_data.get('qty')
+
+        # 在創建訂單項目時更新庫存
+        product.adjust_stock(-qty)  # 減少庫存
+        order_item = super().create(validated_data)
+        return order_item
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, write_only=True)
-    member_id = serializers.PrimaryKeyRelatedField(queryset=Member.objects.all())
+    member = serializers.PrimaryKeyRelatedField(queryset=Member.objects.all())
     total_price = serializers.DecimalField(
         max_digits=10, decimal_places=0, read_only=True
     )
@@ -38,60 +57,28 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            "id",
-            "member_id",
+            "member",
             "total_price",
             "items",
         ]
 
-    def validate(self, attrs):
-        # 驗證商品庫存
-        items = attrs.get("items", [])
-        for item in items:
-            product = item.get("product")
-            qty = item.get("qty")
-            if product.stock_pcs < qty:
-                raise serializers.ValidationError(f"商品 {product.name} 的庫存不足")
-        return attrs
-
     def create(self, validated_data):
-        items_data = validated_data.pop("items")
+        items_data = validated_data.pop('items')  # 取出訂單項目
+        member = validated_data.pop('member')
+        print(f'-----{validated_data}-----')
+        order = Order.objects.create(member=member,**validated_data)  # 創建訂單
         print(validated_data)
 
-        # 獲取 member 實例
-        member = validated_data.pop(
-            "member_id"
-        )  # 這裡可以直接使用 `member_id`，它已經是 `Member` 實例
-        print(member)
-        member_id = member.id
-        print(member_id)
+        for item_data in items_data:
+            # 為每個訂單項目創建 OrderItem
+            OrderItem.objects.create(order=order, **item_data)
 
-        # 創建訂單
-        order = Order.objects.create(member_id=member_id, **validated_data)
-
-        total_price = 0
-        with transaction.atomic():  # 保證原子操作
-            for item_data in items_data:
-                product = item_data["product"]
-                qty = item_data["qty"]
-                price = item_data["price"]
-
-                # 減少商品庫存
-                if product.stock_pcs < qty:
-                    raise serializers.ValidationError(
-                        f"商品 {product.name} 庫存不足，無法訂購此數量"
-                    )
-                product.stock_pcs -= qty
-                product.save()
-
-                # 創建訂單項目
-                order_item = OrderItem.objects.create(
-                    order=order, product=product, qty=qty, price=price
-                )
-                total_price += order_item.subtotal  # 使用 `subtotal` 自動計算小計
-
-        # 更新訂單的總金額
-        order.total_price = total_price
-        order.save()
-
+        order.calculate_total_price()  # 計算總金額
         return order
+
+    def validate_member(self, value):
+        """驗證會員是否存在且有效"""
+        if not value:
+            raise serializers.ValidationError("請輸入有效的會員")
+        return value
+
