@@ -65,7 +65,7 @@ class OrderViewSet(
             return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
 
 
-    def update(self, request, pk=None):
+    def partial_update(self, request, pk=None):
         try:
 
             order = Order.objects.get(pk=pk)

@@ -20,7 +20,7 @@ class Shop(models.Model):
     )
 
     def __str__(self):
-        return f'商店id {self.id} 商店名稱{self.name}'
+        return f'商店id {self.id} 商店名稱 {self.get_name_display()}'
 
 
 class Product(models.Model):
@@ -102,11 +102,10 @@ class OrderItem(models.Model):
             # 恢復舊的庫存
             if self.pk:
                 old_order_item = OrderItem.objects.get(pk=self.pk)
-                old_order_item.adjust_stock(self.qty)
+                old_order_item.adjust_stock(old_order_item.qty)
             # 計算子訂單價格
-            if not self.price:
-                #商品的價格由product進行連動
-                self.price = self.product.price
+            self.price = self.price or self.product.price
+            self.adjust_stock(-self.qty)
             self.subtotal = self.qty * self.price
             super().save(*args, **kwargs)
             # 同時更新總金額
@@ -121,7 +120,7 @@ class OrderItem(models.Model):
         if self.product.stock_pcs + qty < 0:
             raise ValidationError(f"庫存不足，當前庫存為 {self.product.stock_pcs}，無法減少 {abs(qty)} 件。")
         self.product.stock_pcs += qty
-        self.save()
+        self.product.save()
 
     def __str__(self):
         return f'Order:{self.id}, Product:{self.product.id}, Qty:{self.qty} , Price:{self.price} , Subtotal:{self.subtotal}'
