@@ -78,39 +78,37 @@ def check_vip_identity(view_func):
 
         data = request.data
         print(f'Request Data: {request.data}')
-        product_id = data.get("product")
+
+        # 獲取 member_id，檢查是否存在
         member_id = data.get("member_id")
+        if not member_id:
+            return Response({"error": "會員資訊缺失"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # product_id = validated_data.get("product")
-        # member_id = validated_data.get("member_id")
-
-        print(f'-----{member_id}-----')
-
-        if not product_id or not member_id:
-
-            return Response(
-                {"error": "商品或會員資訊缺失"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         try:
-            product = Product.objects.get(id=product_id)
-            member = Member.objects.get(id=member_id)
-            if  product.is_vip and not member.is_vip:
-
-             return Response(
-                    {"error": "VIP 商品無法購買"},
-                     status=status.HTTP_400_BAD_REQUEST,
-                    )
-        except Product.DoesNotExist:
-                return Response(
-                    {"error": "商品不存在"}, status=status.HTTP_404_NOT_FOUND
-                )
+            member = Member.objects.get(id=member_id)  # 確認會員是否存在
         except Member.DoesNotExist:
-            return Response(
-                {"error": "會員不存在"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "會員不存在"}, status=status.HTTP_404_NOT_FOUND)
 
+        # 遍歷 items 中的每個商品進行檢查
+        items = data.get("items", [])
+        if not items:
+            return Response({"error": "訂單項目缺失"}, status=status.HTTP_400_BAD_REQUEST)
+
+        for item in items:
+            product_id = item.get("product")
+            if not product_id:
+                return Response({"error": "商品資訊缺失"}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                product = Product.objects.get(id=product_id)  # 確認商品是否存在
+            except Product.DoesNotExist:
+                return Response({"error": "商品不存在"}, status=status.HTTP_404_NOT_FOUND)
+
+            # 檢查是否是 VIP 商品，並且會員是否為 VIP
+            if product.is_vip and not member.is_vip:
+                return Response({"error": "VIP 商品無法購買"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 如果所有檢查都通過，執行原始的視圖處理
         return view_func(view_instance, request, *args, **kwargs)
 
     return wrapper

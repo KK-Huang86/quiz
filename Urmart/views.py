@@ -11,8 +11,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .decorators import check_stock, check_vip_identity
-from .models import Member, Order, Product
-from .serializers import MemberSerializer, OrderSerializer, ProductSerializer
+from .models import Member, Order, Product, Shop
+from .serializers import MemberSerializer, OrderSerializer, ProductSerializer, ShopSerializer
 from .task import test_task
 
 
@@ -25,6 +25,9 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+class ShopViewSet(viewsets.ModelViewSet):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
 
 class OrderViewSet(
     mixins.CreateModelMixin,
@@ -36,33 +39,12 @@ class OrderViewSet(
     serializer_class = OrderSerializer
 
     @check_vip_identity
-    @check_stock
-    def create(self, request, pk=None):
-        data = request.data
-        serializer = self.get_serializer(data=data)
-        if serializer.is_valid(raise_exception=True):
-            validated_data = serializer.validated_data  # 取出 serializer 過的資料
-            product = validated_data["product"]
-            qty = validated_data["qty"]
-            price = validated_data["price"]
-            member = validated_data["member_id"]
-            total_price = qty * price
-
-            # 減少商品庫存
-            with transaction.atomic():  # 保證原子操作
-                product.stock_pcs -= qty
-                product.save()
-
-            # 計算訂單價格
-            validated_data["total_price"] = total_price
-            # 設定會員ID
-            validated_data["member_id"] = member.id
-
-            # 創建訂單
-            order = Order.objects.create(**validated_data)
-            return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # @check_stock
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()  # 呼叫 serializer 的 create 方法
+        return Response(self.get_serializer(order).data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
         try:
