@@ -5,14 +5,14 @@ import pytz
 from celery import Celery
 from django.db import transaction
 from django.db.models import Sum
-from rest_framework import (mixins, permissions, status, views,
-                            viewsets)
+from rest_framework import mixins, permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .decorators import check_stock, check_vip_identity
-from .models import Member, Order, Product, Shop
-from .serializers import MemberSerializer, OrderSerializer, ProductSerializer, ShopSerializer
+from .models import Member, Order, OrderItem, Product, Shop
+from .serializers import (MemberSerializer, OrderItemSerializer,
+                          OrderSerializer, ProductSerializer, ShopSerializer)
 from .task import test_task
 
 
@@ -25,9 +25,16 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    queryset = OrderItem.objects.all()
+    serializer_class = OrderItemSerializer
+
 
 class OrderViewSet(
     mixins.CreateModelMixin,
@@ -71,8 +78,8 @@ class OrderViewSet(
     @action(detail=False, methods=["get"])
     def top_three_products(self, request):
         top_products = (
-            Order.objects.values("product__id")# 抓取每一個 Order 內的 product id
-            .annotate(total_sales=Sum("qty")) # 計算每個 product 的總銷售數量
+            Order.objects.values("product__id")  # 抓取每一個 Order 內的 product id
+            .annotate(total_sales=Sum("qty"))  # 計算每個 product 的總銷售數量
             .order_by("-total_sales")[:3]
         )
 
@@ -92,7 +99,7 @@ class test_async_task(views.APIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = []
 
-    def post(self, request,*args,**kwargs):
+    def post(self, request, *args, **kwargs):
         id = request.data.get("id")
 
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")

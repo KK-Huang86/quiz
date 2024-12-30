@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("Urmart", "0002_shopsalesstats_remove_order_member_id_and_more"),
+        ("urmart", "0002_shopsalesstats_remove_order_member_id_and_more"),
     ]
 
     operations = [

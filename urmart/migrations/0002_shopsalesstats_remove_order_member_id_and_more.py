@@ -9,7 +9,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("Urmart", "0001_initial"),
+        ("urmart", "0001_initial"),
     ]
 
     operations = [
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="orders",
-                to="Urmart.member",
+                to="urmart.member",
             ),
         ),
         migrations.AddField(
@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
                 help_text="購買產品",
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="orders",
-                to="Urmart.product",
+                to="urmart.product",
             ),
         ),
         migrations.AlterField(

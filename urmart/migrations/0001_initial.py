@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="orders",
-                        to="Urmart.member",
+                        to="urmart.member",
                     ),
                 ),
                 (
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="orders",
-                        to="Urmart.product",
+                        to="urmart.product",
                     ),
                 ),
             ],

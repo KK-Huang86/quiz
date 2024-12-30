@@ -1,6 +1,6 @@
 import csv
-from datetime import datetime,timedelta
 import os
+from datetime import datetime, timedelta
 from os import stat
 
 from celery import Celery, shared_task
@@ -10,7 +10,7 @@ from django.db.models.functions import Cast
 
 from .models import Order, ShopSalesStats
 
-app = Celery("Urmart")
+app = Celery("urmart")
 
 
 @shared_task()
@@ -21,7 +21,7 @@ def test_task():
 @shared_task()
 def generate_shop_sales_stats():
     today = datetime.now().date()
-    yesterday = today - timedelta(days=1) #抓出昨天的銷售資料
+    yesterday = today - timedelta(days=1)  # 抓出昨天的銷售資料
     shop_stats = (
         Order.objects.filter(created_at__date=yesterday)
         .values("shop_id")

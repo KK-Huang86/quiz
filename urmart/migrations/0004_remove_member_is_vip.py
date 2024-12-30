@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("Urmart", "0003_member_is_vip"),
+        ("urmart", "0003_member_is_vip"),
     ]
 
     operations = [

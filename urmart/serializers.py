@@ -1,28 +1,32 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from Urmart.models import Member, Order, Product, OrderItem, Shop
+from urmart.models import Member, Order, OrderItem, Product, Shop
 
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = "__all__"
+
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
-        fields = '__all__'
+        fields = "__all__"
+
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
-        fields = '__all__'
+        fields = "__all__"
+
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ['product', 'qty', 'price','subtotal']
+        fields = ["product", "qty", "price", "subtotal"]
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, write_only=True)
@@ -34,10 +38,10 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            'id',
-            'member_id',
-            'total_price',
-            'items',
+            "id",
+            "member_id",
+            "total_price",
+            "items",
         ]
 
     def validate(self, attrs):
@@ -55,7 +59,9 @@ class OrderSerializer(serializers.ModelSerializer):
         print(validated_data)
 
         # 獲取 member 實例
-        member = validated_data.pop('member_id')  # 這裡可以直接使用 `member_id`，它已經是 `Member` 實例
+        member = validated_data.pop(
+            "member_id"
+        )  # 這裡可以直接使用 `member_id`，它已經是 `Member` 實例
         print(member)
         member_id = member.id
         print(member_id)
@@ -72,7 +78,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
                 # 減少商品庫存
                 if product.stock_pcs < qty:
-                    raise serializers.ValidationError(f"商品 {product.name} 庫存不足，無法訂購此數量")
+                    raise serializers.ValidationError(
+                        f"商品 {product.name} 庫存不足，無法訂購此數量"
+                    )
                 product.stock_pcs -= qty
                 product.save()
 

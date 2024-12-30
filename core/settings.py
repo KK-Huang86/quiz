@@ -40,10 +40,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "Urmart",
+    "urmart",
     "django_celery_results",
     "django_celery_beat",
-
 ]
 
 MIDDLEWARE = [
@@ -174,11 +173,11 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Celery Beat schedule for periodic tasks
 CELERY_BEAT_SCHEDULE = {
     "test_task1": {
-        "task": "Urmart.task.test_task",
+        "task": "urmart.task.test_task",
         "schedule": crontab(minute=00, hour=00),
     },
     "generate_shop_sales_stats_daily": {
-        "task": "Urmart.task.generate_shop_sales_stats",
+        "task": "urmart.task.generate_shop_sales_stats",
         "schedule": crontab(minute=00, hour=00),
     },
 }

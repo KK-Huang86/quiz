@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Urmart', '0006_alter_order_member_alter_order_price_and_more'),
+        ("urmart", "0006_alter_order_member_alter_order_price_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='member',
-            name='is_vip',
+            model_name="member",
+            name="is_vip",
             field=models.BooleanField(default=False),
         ),
     ]
