@@ -46,7 +46,7 @@ class OrderViewSet(
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-    # @check_vip_identity
+    @check_vip_identity
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -101,7 +101,7 @@ class OrderViewSet(
     @action(detail=False, methods=["get"])
     def top_three_products(self, request):
         top_products = (
-            Order.objects.values("product__id")  # 抓取每一個 Order 內的 product id
+            OrderItem.objects.values("product__id")  # 抓取每一個 Order 內的 product id
             .annotate(total_sales=Sum("qty"))  # 計算每個 product 的總銷售數量
             .order_by("-total_sales")[:3]
         )

@@ -82,7 +82,7 @@ def check_vip_identity(view_func):
         print(f"Request Data: {request.data}")
 
         # 獲取 member_id，檢查是否存在
-        member_id = data.get("member_id")
+        member_id = data.get("member")
         if not member_id:
             return Response(
                 {"error": "會員資訊缺失"}, status=status.HTTP_400_BAD_REQUEST
@@ -117,7 +117,7 @@ def check_vip_identity(view_func):
             # 檢查是否是 VIP 商品，並且會員是否為 VIP
             if product.is_vip and not member.is_vip:
                 return Response(
-                    {"error": "VIP 商品無法購買"}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": f'{product.name}屬於VIP 商品無法購買'}, status=status.HTTP_400_BAD_REQUEST
                 )
 
         # 如果所有檢查都通過，執行原始的視圖處理

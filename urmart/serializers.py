@@ -35,7 +35,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         qty=data.get("qty")
 
         if product and product.stock_pcs < qty:
-            raise serializers.ValidationError(f'{product.name} 商品庫存不足，僅剩{product.stock_pcs} 件可用')
+            raise serializers.ValidationError(f'商品編號：{product.id} 商品名稱：{product.name} 商品庫存不足，僅剩{product.stock_pcs} 件可用')
         return data
 
     def create(self, validated_data):

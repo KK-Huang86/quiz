@@ -8,7 +8,7 @@ from django.db import models
 from django.db.models import Count, F, Sum
 from django.db.models.functions import Cast
 
-from .models import Order, ShopSalesStats
+from .models import OrderItem, ShopSalesStats
 
 app = Celery("urmart")
 
@@ -23,15 +23,15 @@ def generate_shop_sales_stats():
     today = datetime.now().date()
     yesterday = today - timedelta(days=1)  # 抓出昨天的銷售資料
     shop_stats = (
-        Order.objects.filter(created_at__date=yesterday)
-        .values("shop_id")
+        OrderItem.objects.filter(order__created_at__date=yesterday)
+        .values("product__shop_id")
         .annotate(
             total_sales_amount=Sum(
                 Cast(F("qty"), models.DecimalField())
                 * Cast(F("price"), models.DecimalField())
             ),
             total_qty=Sum("qty"),
-            total_orders=Count("id"),
+            total_orders=Count("order_id"),
         )
     )
 
@@ -50,7 +50,7 @@ def generate_shop_sales_stats():
     # value 抓出來會是 dict 的形式
 
     for stat in shop_stats:
-        shop_id = stat["shop_id"]
+        shop_id = stat['product__shop_id']
         total_sales_amount = stat["total_sales_amount"] or 0
         total_qty = stat["total_qty"] or 0
         total_orders = stat["total_orders"] or 0
@@ -58,7 +58,7 @@ def generate_shop_sales_stats():
         # 如果該日期已經有記錄，則更新，否則創建新記錄
         ShopSalesStats.objects.update_or_create(
             shop_id=shop_id,
-            date=today,
+            created_at=today,
             defaults={
                 "total_sales_amount": total_sales_amount,
                 "total_qty": total_qty,
@@ -97,10 +97,10 @@ def generate_shop_sales_stats():
             for stat in shop_stats:
                 writer.writerow(
                     [
-                        stat["shop_id"],
-                        stat["total_sales_amount"],
-                        stat["total_qty"],
-                        stat["total_orders"],
+                        stat['product__shop_id'],
+                        stat['total_sales_amount'],
+                        stat['total_qty'],
+                        stat['total_orders'],
                         yesterday,
                     ]
                 )
