@@ -27,7 +27,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ["product", "qty", "price", "subtotal"]
+        fields = ['id','product', 'qty', 'price', 'subtotal']
         read_only_fields = ["price", "subtotal"]
 
     def validate(self, data):
@@ -39,13 +39,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # product = validated_data.get('product')
-        # qty = validated_data.get('qty')
-        #
-        # # 在創建訂單項目時更新庫存
-        # product.adjust_stock(-qty)  # 減少庫存
+
         return super().create(validated_data)
-        # return order_item
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, write_only=True)
@@ -53,7 +48,7 @@ class OrderSerializer(serializers.ModelSerializer):
     total_price = serializers.DecimalField(
         max_digits=10, decimal_places=0, read_only=True
     )
-    order_items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    order_items = OrderItemSerializer(source='items', many=True, read_only=True)
 
     class Meta:
         model = Order

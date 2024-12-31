@@ -78,6 +78,7 @@ def check_vip_identity(view_func):
         # serializer.is_valid(raise_exception=True)
         # validated_data = serializer.validated_data
 
+        #從viewset傳入 request.data
         data = request.data
         print(f"Request Data: {request.data}")
 
@@ -120,7 +121,7 @@ def check_vip_identity(view_func):
                     {"error": f'{product.name}屬於VIP 商品無法購買'}, status=status.HTTP_400_BAD_REQUEST
                 )
 
-        # 如果所有檢查都通過，執行原始的視圖處理
+
         return view_func(view_instance, request, *args, **kwargs)
 
     return wrapper

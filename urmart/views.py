@@ -43,7 +43,7 @@ class OrderViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Order.objects.all()
+    queryset = Order.objects.prefetch_related('items') #預先取用相關OrderItem資料
     serializer_class = OrderSerializer
 
     @check_vip_identity
@@ -51,9 +51,9 @@ class OrderViewSet(
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        order = serializer.save()
-        order.calculate_total_price()# 呼叫 serializer 的 create 方法
-        return Response(self.get_serializer(order).data, status=status.HTTP_201_CREATED)
+        order = serializer.save() # 呼叫 serializer 的 create 方法
+        response_serializer = self.get_serializer(order)  # 包含嵌套資料
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, pk=None):
         try:
@@ -85,7 +85,7 @@ class OrderViewSet(
             order = Order.objects.get(pk=pk)
             order_items = order.items.all()
 
-            # 恢復庫存
+            #恢復庫存
             for item in order_items:
                 item.adjust_stock(item.qty)  # 恢復庫存
 

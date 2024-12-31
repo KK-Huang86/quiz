@@ -115,8 +115,6 @@ class OrderItem(models.Model):
         self.order.calculate_total_price()
 
     def adjust_stock(self,qty):
-        if self.product.stock_pcs + qty < 0:
-            raise ValidationError(f'庫存不足，當前庫存為 {self.product.stock_pcs}，無法減少 {abs(qty)} 件。')
         self.product.stock_pcs += qty
         self.product.save()
 

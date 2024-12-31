@@ -17,10 +17,4 @@ urlpatterns = [
     path("api/test_task", csrf_exempt(test_async_task.as_view()), name="api-test_task"),
 ]
 
-# urlpatterns = [
-#     path('orders/order_create/', OrderViewSet.as_view({'post': 'create'})),
-#     path('orders/<int:pk>/order_delete/', OrderViewSet.as_view({'delete': 'order_delete'})),
-# ]
-#
-#
 urlpatterns += router.urls
