@@ -12,7 +12,7 @@ repos:
     -   id: black
         name: 格式化
         exclude: '^migrations/'
-        args: [ '--string-normalization' ]
+        args: [ '--skip-string-normalization' ]
 
 
 -   repo: https://github.com/PyCQA/isort

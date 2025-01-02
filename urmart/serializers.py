@@ -23,24 +23,27 @@ class MemberSerializer(serializers.ModelSerializer):
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
-    product=serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
 
     class Meta:
         model = OrderItem
-        fields = ['id','product', 'qty', 'price', 'subtotal']
+        fields = ['id', 'product', 'qty', 'price', 'subtotal']
         read_only_fields = ["price", "subtotal"]
 
     def validate(self, data):
-        product=data.get("product")
-        qty=data.get("qty")
+        product = data.get("product")
+        qty = data.get("qty")
 
         if product and product.stock_pcs < qty:
-            raise serializers.ValidationError(f'商品編號：{product.id} 商品名稱：{product.name} 商品庫存不足，僅剩{product.stock_pcs} 件可用')
+            raise serializers.ValidationError(
+                f'商品編號：{product.id} 商品名稱：{product.name} 商品庫存不足，僅剩{product.stock_pcs} 件可用'
+            )
         return data
 
     def create(self, validated_data):
 
         return super().create(validated_data)
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, write_only=True)
@@ -52,20 +55,14 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = [
-            "id",
-            "member",
-            "total_price",
-            "items",
-            "order_items"
-        ]
+        fields = ["id", "member", "total_price", "items", "order_items"]
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')  # 取出訂單項目
-        member = validated_data.pop('member')
-        print(f'-----{member}{items_data}-----')
-        order = Order.objects.create(member=member,**validated_data)  # 創建訂單
-        print(validated_data)
+        # member = validated_data.pop('member')
+        # print(f'-----{items_data}-----')
+        order = Order.objects.create(**validated_data)  # 創建訂單
+        print(f'-------"validated_data"{validated_data}')
 
         for item_data in items_data:
             # 為每個訂單項目創建 OrderItem
@@ -74,9 +71,16 @@ class OrderSerializer(serializers.ModelSerializer):
         order.calculate_total_price()  # 計算總金額
         return order
 
-    def validate_member(self, value):
-        """驗證會員是否存在且有效"""
-        if not value:
-            raise serializers.ValidationError("請輸入有效的會員")
-        return value
+    def update(self, instance, validated_data):
+        items_data = validated_data.pop('items')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
 
+        if items_data:
+            instance.items.all().delete()
+            for item_data in items_data:
+                OrderItem.objects.create(order=instance, **item_data)
+
+        instance.calculate_total_price()
+        return instance

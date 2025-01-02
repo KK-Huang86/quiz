@@ -89,7 +89,7 @@ class OrderItem(models.Model):
     )
     qty = models.PositiveIntegerField(default=1, help_text='購買數量')
     price = models.DecimalField(
-        max_digits=10, decimal_places=0, default=0, help_text='商品單價',editable=False
+        max_digits=10, decimal_places=0, default=0, help_text='商品單價', editable=False
     )
     subtotal = models.DecimalField(
         max_digits=10, decimal_places=0, help_text='小計', editable=False, default=0
@@ -109,12 +109,18 @@ class OrderItem(models.Model):
             # 同時更新總金額
             self.order.calculate_total_price()
 
+    # def adjust_stock_and_calculate(self):
+    #     self.price = self.product.price
+    #     self.subtotal = self.qty * self.price
+    #     self.product.stock_pcs -= self.qty
+    #     self.product.save()
+
     def delete(self, *args, **kwargs):
         self.adjust_stock(self.qty)
         super().delete(*args, **kwargs)
         self.order.calculate_total_price()
 
-    def adjust_stock(self,qty):
+    def adjust_stock(self, qty):
         self.product.stock_pcs += qty
         self.product.save()
 

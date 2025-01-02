@@ -39,19 +39,20 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 class OrderViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
-    mixins.UpdateModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Order.objects.prefetch_related('items') #預先取用相關OrderItem資料
+    queryset = Order.objects.prefetch_related('items')  # 預先取用相關OrderItem資料
     serializer_class = OrderSerializer
 
     @check_vip_identity
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)  # 驗證會員是否有效
 
-        order = serializer.save() # 呼叫 serializer 的 create 方法
+        order = serializer.save()  # 呼叫 serializer 的 create 方法
         response_serializer = self.get_serializer(order)  # 包含嵌套資料
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
@@ -64,7 +65,6 @@ class OrderViewSet(
         except Order.DoesNotExist:
             return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
 
-
     def partial_update(self, request, pk=None):
         try:
 
@@ -73,11 +73,12 @@ class OrderViewSet(
             serializer.is_valid(raise_exception=True)
             updated_order = serializer.save()
             updated_order.calculate_total_price()  # 更新總金額
-            return Response(self.get_serializer(updated_order).data, status=status.HTTP_200_OK)
+            return Response(
+                self.get_serializer(updated_order).data, status=status.HTTP_200_OK
+            )
 
         except Order.DoesNotExist:
             return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
-
 
     def destroy(self, request, pk):
         try:
@@ -85,7 +86,7 @@ class OrderViewSet(
             order = Order.objects.get(pk=pk)
             order_items = order.items.all()
 
-            #恢復庫存
+            # 恢復庫存
             for item in order_items:
                 item.adjust_stock(item.qty)  # 恢復庫存
 
@@ -96,7 +97,6 @@ class OrderViewSet(
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Order.DoesNotExist:
             return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
-
 
     @action(detail=False, methods=["get"])
     def top_three_products(self, request):

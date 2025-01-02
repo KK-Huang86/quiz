@@ -28,6 +28,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='orderitem',
             name='price',
-            field=models.DecimalField(decimal_places=0, default=0, editable=False, help_text='商品單價', max_digits=10),
+            field=models.DecimalField(
+                decimal_places=0,
+                default=0,
+                editable=False,
+                help_text='商品單價',
+                max_digits=10,
+            ),
         ),
     ]
