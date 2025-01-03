@@ -34,13 +34,17 @@ class MemberFactory(DjangoModelFactory):
     member_name = Faker("name")
     is_vip = Faker("boolean")
 
+class OrderItemFactory(DjangoModelFactory):
+    class Meta:
+        model = OrderItem
+
 
 @pytest.fixture
 def order():
     shop = Shop.objects.create(name=1)
     member = Member.objects.create(member_name="KK")
     product = Product.objects.create(
-        stock_pcs=100, price=Decimal("20"), shop_id=2, is_vip=False
+        stock_pcs=100, price=Decimal("20"), shop=shop, is_vip=False
     )
     order = Order.objects.create(
         total_price=200,
@@ -76,33 +80,39 @@ def test_create_order():
     assert product.stock_pcs == 90, "剩餘庫存錯誤"
 
 
-#
+
+@pytest.mark.django_db
+def test_order_list():
+    client = APIClient()
+    response = client.get(f"/api/orders/")
+    assert response.status_code == status.HTTP_200_OK
+
+@pytest.mark.django_db
+def test_retrieve_order(order):
+    client = APIClient()
+    response = client.get(f"/api/orders/991/")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.data["error"] == "該訂單不存在"
+
+
 # @pytest.mark.django_db
-# def test_order_list():
+# def test_retrieve_order_detail(order):
+#     order=Order.objects.get(id=order.id)
 #     client = APIClient()
-#     response = client.get(f"/api/orders/")
-#     assert response.status_code == status.HTTP_200_OK
+#     response=client.get(f'/api/orders/{order.id}')
+#     assert response
+
+@pytest.mark.django_db
+def test_order_delete(order):
+    order = Order.objects.first()
+    assert order is not None, "找不到訂單編號"
+    client = APIClient()
+    response = client.delete(f"/api/orders/{order.id}/")
+    assert response.status_code == status.HTTP_204_NO_CONTENT, "刪除失敗"
 #
 #
-# @pytest.mark.django_db
-# def test_retrieve_order(order):
-#     client = APIClient()
-#     response = client.get(f"/api/orders/991/")
-#     assert response.status_code == status.HTTP_404_NOT_FOUND
-#     assert response.data["error"] == "該訂單不存在"
-#
-#
-# @pytest.mark.django_db
-# def test_order_delete(order):
-#     order = Order.objects.first()
-#     assert order is not None, "找不到訂單編號"
-#     client = APIClient()
-#     response = client.delete(f"/api/orders/{order.id}/")
-#     assert response.status_code == status.HTTP_204_NO_CONTENT, "刪除失敗"
-#
-#
-# @pytest.mark.django_db
-# def test_get_popular_orders():
+@pytest.mark.django_db
+def test_get_popular_orders():
 #     product_a = Product.objects.create(
 #         stock_pcs=100, price="20", shop_id=2, is_vip=False
 #     )
@@ -112,55 +122,59 @@ def test_create_order():
 #     product_c = Product.objects.create(
 #         stock_pcs=150, price="50", shop_id=2, is_vip=False
 #     )
+
+    product_a=ProductFactory()
+    product_b=ProductFactory()
+    product_c=ProductFactory()
+
+    member_a = MemberFactory()
+    member_b = MemberFactory()
+    member_c = MemberFactory()
+    member_d = MemberFactory()
 #
-#     member_a = Member.objects.create(member_name="KK")
-#     member_b = Member.objects.create(member_name="gg")
-#     member_c = Member.objects.create(member_name="qef")
-#     member_d = Member.objects.create(member_name="q22f")
+    Order.objects.create(
+        product=product_a,
+        qty=5,
+        price=product_a.price,
+        shop_id=2,
+        member_id=member_a.id,
+    )
+    Order.objects.create(
+        product=product_c,
+        qty=5,
+        price=product_c.price,
+        shop_id=1,
+        member_id=member_b.id,
+    )
+    Order.objects.create(
+        product=product_b,
+        qty=30,
+        price=product_b.price,
+        shop_id=1,
+        member_id=member_c.id,
+    )
+    Order.objects.create(
+        product=product_a,
+        qty=50,
+        price=product_a.price,
+        shop_id=3,
+        member_id=member_d.id,
+    )
+
+    top_products = (
+        Order.objects.values("product__id")
+        .annotate(total_sales_qty=Sum("qty"))
+        .order_by("-total_sales_qty")[:3]
+    )
 #
-#     Order.objects.create(
-#         product=product_a,
-#         qty=5,
-#         price=product_a.price,
-#         shop_id=2,
-#         member_id=member_a.id,
-#     )
-#     Order.objects.create(
-#         product=product_c,
-#         qty=5,
-#         price=product_c.price,
-#         shop_id=1,
-#         member_id=member_b.id,
-#     )
-#     Order.objects.create(
-#         product=product_b,
-#         qty=30,
-#         price=product_b.price,
-#         shop_id=1,
-#         member_id=member_c.id,
-#     )
-#     Order.objects.create(
-#         product=product_a,
-#         qty=50,
-#         price=product_a.price,
-#         shop_id=3,
-#         member_id=member_d.id,
-#     )
-#
-#     top_products = (
-#         Order.objects.values("product__id")
-#         .annotate(total_sales_qty=Sum("qty"))
-#         .order_by("-total_sales_qty")[:3]
-#     )
-#
-#     assert len(top_products) == 3, "只抓三個"
-#     assert top_products[0]["product__id"] == product_a.id
-#     assert top_products[1]["product__id"] == product_b.id
-#     assert top_products[2]["product__id"] == product_c.id
-#
-#     assert top_products[0]["total_sales_qty"] == 55
-#     assert top_products[1]["total_sales_qty"] == 30
-#     assert top_products[2]["total_sales_qty"] == 5
+    assert len(top_products) == 3, "只抓三個"
+    assert top_products[0]["product__id"] == product_a.id
+    assert top_products[1]["product__id"] == product_b.id
+    assert top_products[2]["product__id"] == product_c.id
+
+    assert top_products[0]["total_sales_qty"] == 55
+    assert top_products[1]["total_sales_qty"] == 30
+    assert top_products[2]["total_sales_qty"] == 5
 #
 #
 # @pytest.mark.django_db
