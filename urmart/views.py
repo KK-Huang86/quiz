@@ -50,7 +50,7 @@ class OrderViewSet(
     @check_vip_identity
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)  # 驗證會員是否有效
+        serializer.is_valid(raise_exception=True)  # 驗證會員是否有效，觸發所有 validate方法
 
         order = serializer.save()  # 呼叫 serializer 的 create 方法
         response_serializer = self.get_serializer(order)  # 包含嵌套資料
@@ -71,7 +71,7 @@ class OrderViewSet(
             order = Order.objects.get(pk=pk)
             serializer = self.get_serializer(order, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
-            updated_order = serializer.save()
+            updated_order = serializer.save() #觸發 update
             updated_order.calculate_total_price()  # 更新總金額
             return Response(
                 self.get_serializer(updated_order).data, status=status.HTTP_200_OK
