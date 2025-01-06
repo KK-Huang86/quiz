@@ -10,3 +10,4 @@ db.sqlite3
 staticfiles/
 core/settings_local.py
 .coverage
+*.dot
