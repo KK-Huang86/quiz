@@ -74,10 +74,6 @@ def check_vip_identity(view_func):
                 {"error": "無效的請求"}, status=status.HTTP_400_BAD_REQUEST
             )  # 確保 request是否為DRF中Request類型
 
-        # serializer = view_instance.get_serializer(data=request.data)
-        # serializer.is_valid(raise_exception=True)
-        # validated_data = serializer.validated_data
-
         # 從viewset傳入 request.data
         data = request.data
         print(f"Request Data: {request.data}")

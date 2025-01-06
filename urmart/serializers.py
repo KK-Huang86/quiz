@@ -78,7 +78,19 @@ class OrderSerializer(serializers.ModelSerializer):
         instance.save()
 
         if items_data:
-            instance.items.all().delete()
+            for item in instance.items.all():
+                item.product.stock_pcs += item.qty
+                item.product.save()
+                item.delete()
+
+            for item_data in items_data:
+                product = Product.objects.get(id=item_data["product"].id)
+                if product.stock_pcs < item_data["qty"]:
+                    raise serializers.ValidationError(
+                        f"{product.name} 庫存不足，僅剩 {product.stock_pcs} 件可用"
+                    )
+                product.stock_pcs -= item_data["qty"]  # 減少新訂單的庫存
+                product.save()
             for item_data in items_data:
                 OrderItem.objects.create(order=instance, **item_data)
 

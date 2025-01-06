@@ -11,3 +11,5 @@ staticfiles/
 core/settings_local.py
 .coverage
 *.dot
+*.png
+Urmart
