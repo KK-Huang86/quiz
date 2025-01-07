@@ -7,19 +7,19 @@ from urmart.models import Member, Order, OrderItem, Product, Shop
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = '__all__'
 
 
 class ShopSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shop
-        fields = "__all__"
+        fields = '__all__'
 
 
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
-        fields = "__all__"
+        fields = '__all__'
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -28,11 +28,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
         fields = ['id', 'product', 'qty', 'price', 'subtotal']
-        read_only_fields = ["price", "subtotal"]
+        read_only_fields = ['price', 'subtotal']
 
     def validate(self, data):
-        product = data.get("product")
-        qty = data.get("qty")
+        product = data.get('product')
+        qty = data.get('qty')
 
         if product and product.stock_pcs < qty:
             raise serializers.ValidationError(
@@ -55,14 +55,14 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ["id", "member", "total_price", "items", "order_items"]
+        fields = ['id', 'member', 'total_price', 'items', 'order_items']
 
     def create(self, validated_data):
-        items_data = validated_data.pop('items')  # 取出訂單項目
+        items_data = validated_data.pop('items',None)  # 取出訂單項目
         # member = validated_data.pop('member')
         # print(f'-----{items_data}-----')
         order = Order.objects.create(**validated_data)  # 創建訂單
-        print(f'-------"validated_data"{validated_data}')
+        print(f"-------'validated_data'{validated_data}")
 
         for item_data in items_data:
             # 為每個訂單項目創建 OrderItem
@@ -84,12 +84,12 @@ class OrderSerializer(serializers.ModelSerializer):
                 item.delete()
 
             for item_data in items_data:
-                product = Product.objects.get(id=item_data["product"].id)
-                if product.stock_pcs < item_data["qty"]:
+                product = Product.objects.get(id=item_data['product'].id)
+                if product.stock_pcs < item_data['qty']:
                     raise serializers.ValidationError(
-                        f"{product.name} 庫存不足，僅剩 {product.stock_pcs} 件可用"
+                        f'{product.name} 庫存不足，僅剩 {product.stock_pcs} 件可用'
                     )
-                product.stock_pcs -= item_data["qty"]  # 減少新訂單的庫存
+                product.stock_pcs -= item_data['qty']  # 減少新訂單的庫存
                 product.save()
             for item_data in items_data:
                 OrderItem.objects.create(order=instance, **item_data)

@@ -20,6 +20,7 @@ pylint = "^3.3.3"
 graphviz = "^0.20.3"
 django-extensions = "^3.2.3"
 pydotplus = "^2.0.2"
+eventlet = "^0.38.2"
 
 [tool.poetry.group.dev.dependencies]
 commitizen = "^4.1.0"

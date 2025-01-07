@@ -62,7 +62,7 @@ class Order(models.Model):
 
     def clean(self):
         if not self.member:
-            raise ValidationError("需輸入購買的會員")
+            raise ValidationError('需輸入購買的會員')
 
     def calculate_total_price(self):
         """計算訂單的總價格"""

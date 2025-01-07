@@ -7,7 +7,7 @@ from .views import (MemberViewSet, OrderViewSet, ProductViewSet, ShopViewSet,
 
 router = DefaultRouter()
 
-router.register(r"orders", OrderViewSet, basename="order")
+router.register(r'orders', OrderViewSet, basename='order')
 router.register(r"members", MemberViewSet)
 router.register(r"products", ProductViewSet)
 router.register(r"shop", ShopViewSet)

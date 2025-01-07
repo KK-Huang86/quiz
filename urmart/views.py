@@ -63,7 +63,7 @@ class OrderViewSet(
             return Response(order_serializer.data, status=status.HTTP_200_OK)
 
         except Order.DoesNotExist:
-            return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': '該訂單不存在'}, status=status.HTTP_404_NOT_FOUND)
 
     def partial_update(self, request, pk=None):
         try:
@@ -78,7 +78,7 @@ class OrderViewSet(
             )
 
         except Order.DoesNotExist:
-            return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': '該訂單不存在'}, status=status.HTTP_404_NOT_FOUND)
 
     def destroy(self, request, pk):
         try:
@@ -96,20 +96,20 @@ class OrderViewSet(
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Order.DoesNotExist:
-            return Response({"error": "該訂單不存在"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': '該訂單不存在'}, status=status.HTTP_404_NOT_FOUND)
 
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=['get'])
     def top_three_products(self, request):
         top_products = (
-            OrderItem.objects.values("product__id")  # 抓取每一個 Order 內的 product id
-            .annotate(total_sales=Sum("qty"))  # 計算每個 product 的總銷售數量
-            .order_by("-total_sales")[:3]
+            OrderItem.objects.values('product__id')  # 抓取每一個 Order 內的 product id
+            .annotate(total_sales=Sum('qty'))  # 計算每個 product 的總銷售數量
+            .order_by('-total_sales')[:3]
         )
 
         data = [
             {
-                "product_id": product["product__id"],
-                "total_sales": product["total_sales"],
+                'product_id': product['product__id'],
+                'total_sales': product['total_sales'],
             }
             for product in top_products
         ]
@@ -123,14 +123,14 @@ class test_async_task(views.APIView):
     authentication_classes = []
 
     def post(self, request, *args, **kwargs):
-        id = request.data.get("id")
+        id = request.data.get('id')
 
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
-        app = Celery("core")
-        app.config_from_object("django.conf:settings", namespace="CELERY")
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+        app = Celery('core')
+        app.config_from_object('django.conf:settings', namespace='CELERY')
         app.autodiscover_tasks()
 
-        local_timezone = pytz.timezone("Asia/Taipei")
+        local_timezone = pytz.timezone('Asia/Taipei')
         now = datetime.datetime.now()
         # 90秒後執行
         exec_time = now + datetime.timedelta(seconds=90)
@@ -141,5 +141,5 @@ class test_async_task(views.APIView):
         test_task.apply_async(args=(id,), eta=exec_time)
 
         return Response(
-            {"success": True, "message": "執行成功"}, status=status.HTTP_200_OK
+            {'success': True, 'message': '執行成功'}, status=status.HTTP_200_OK
         )

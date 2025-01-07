@@ -171,14 +171,3 @@ CELERY_RESULT_EXTENDED = True
 # Celery Beat scheduler
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
-# Celery Beat schedule for periodic tasks
-CELERY_BEAT_SCHEDULE = {
-    "test_task1": {
-        "task": "urmart.task.test_task",
-        "schedule": crontab(minute=47, hour=11),
-    },
-    "generate_shop_sales_stats_daily": {
-        "task": "urmart.task.generate_shop_sales_stats",
-        "schedule": crontab(minute=47, hour=11),
-    },
-}
