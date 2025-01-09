@@ -24,6 +24,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+    subtotal=serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
@@ -44,6 +45,8 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
         return super().create(validated_data)
 
+    def get_subtotal(self, obj):
+        return obj.subtotal
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, write_only=True)

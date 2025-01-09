@@ -3,6 +3,10 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
+import logging
+
+logger = logging.getLogger('django')
+logger.warning("錯誤")
 
 # Create your models here.
 
@@ -91,9 +95,15 @@ class OrderItem(models.Model):
     price = models.DecimalField(
         max_digits=10, decimal_places=0, default=0, help_text='商品單價', editable=False
     )
-    subtotal = models.DecimalField(
-        max_digits=10, decimal_places=0, help_text='小計', editable=False, default=0
-    )
+
+    @property
+    def subtotal(self):
+        if self.product and self.qty:
+            if self.product.price >0 and self.qty > 0:
+                return self.product.price * self.qty
+        logger.warning(f"錯誤的小計金額 OrderItem {self.id}. Price: {self.product.price}, Qty: {self.qty}")
+        return 0
+
 
     def save(self, *args, **kwargs):
         with transaction.atomic():
@@ -104,7 +114,6 @@ class OrderItem(models.Model):
             # 計算子訂單價格
             self.price = self.product.price
             self.adjust_stock(-self.qty)
-            self.subtotal = self.qty * self.price
             super().save(*args, **kwargs)
             # 同時更新總金額
             self.order.calculate_total_price()
