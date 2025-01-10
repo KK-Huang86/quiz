@@ -3,13 +3,15 @@ __pycache__/
 node_modules/
 static/styles/
 static/scripts/
+datafiles/
+staticfiles/
+Urmartfiles/
+dbfiles/
 .env
 db.sqlite3
 .DS_Store
 *.pdf
-staticfiles/
 core/settings_local.py
 .coverage
 *.dot
 *.png
-Urmart

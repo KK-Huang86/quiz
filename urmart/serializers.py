@@ -2,6 +2,8 @@ from django.db import transaction
 from rest_framework import serializers
 
 from urmart.models import Member, Order, OrderItem, Product, Shop
+from django.db.models import F
+
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -40,10 +42,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
                 f'商品編號：{product.id} 商品名稱：{product.name} 商品庫存不足，僅剩{product.stock_pcs} 件可用'
             )
         return data
-
-    def create(self, validated_data):
-
-        return super().create(validated_data)
 
     def get_subtotal(self, obj):
         return obj.subtotal
@@ -86,16 +84,23 @@ class OrderSerializer(serializers.ModelSerializer):
                 item.product.save()
                 item.delete()
 
+            new_items=[]
             for item_data in items_data:
                 product = Product.objects.get(id=item_data['product'].id)
                 if product.stock_pcs < item_data['qty']:
                     raise serializers.ValidationError(
                         f'{product.name} 庫存不足，僅剩 {product.stock_pcs} 件可用'
                     )
-                product.stock_pcs -= item_data['qty']  # 減少新訂單的庫存
+
+                order_item=OrderItem.objects.create(order=instance, **item_data)
+                new_items.append(order_item)
+
+            #  後扣庫存
+            for new_item in new_items:
+                product = new_item.product
+                product.stock_pcs -= new_item.qty  # 減少新訂單的庫存
                 product.save()
-            for item_data in items_data:
-                OrderItem.objects.create(order=instance, **item_data)
+                new_item.save()
 
         instance.calculate_total_price()
         return instance

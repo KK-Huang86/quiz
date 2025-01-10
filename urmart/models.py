@@ -4,11 +4,16 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 import logging
+from decimal import Decimal
+
 
 logger = logging.getLogger('django')
-logger.warning("錯誤")
+logger.info("錯誤")
+de_zero = Decimal('0.00')
+
 
 # Create your models here.
+
 
 
 class Shop(models.Model):
@@ -31,10 +36,11 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=0, default=0)
     shop = models.ForeignKey(
         Shop,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='products',
         help_text='商品所屬商店',
-        default=1,
+        null=True,
+        blank=True,
     )
     is_vip = models.BooleanField(default=False)
 
@@ -52,11 +58,11 @@ class Member(models.Model):
 
 class Order(models.Model):
     total_price = models.DecimalField(
-        max_digits=10, decimal_places=0, default=0, help_text='訂單總額'
+        max_digits=10, decimal_places=0, default=de_zero, help_text='訂單總額'
     )
     member = models.ForeignKey(
         Member,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='orders',
         help_text='購買成員',
         null=True,
@@ -80,20 +86,22 @@ class Order(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='items',
         help_text='所屬訂單',
+        null=True,
+        blank=True,
     )
 
     product = models.ForeignKey(
         Product,
-        on_delete=models.CASCADE,
+        on_delete=models.DO_NOTHING,
         related_name='order_items',
         help_text='訂單中的商品',
     )
     qty = models.PositiveIntegerField(default=1, help_text='購買數量')
     price = models.DecimalField(
-        max_digits=10, decimal_places=0, default=0, help_text='商品單價', editable=False
+        max_digits=10, decimal_places=0, default=de_zero, help_text='商品單價', editable=False
     )
 
     @property
@@ -101,7 +109,7 @@ class OrderItem(models.Model):
         if self.product and self.qty:
             if self.product.price >0 and self.qty > 0:
                 return self.product.price * self.qty
-        logger.warning(f"錯誤的小計金額 OrderItem {self.id}. Price: {self.product.price}, Qty: {self.qty}")
+        logger.info(f"錯誤的小計金額 OrderItem {self.id}. Price: {self.product.price}, Qty: {self.qty}")
         return 0
 
 
@@ -140,12 +148,13 @@ class OrderItem(models.Model):
 class ShopSalesStats(models.Model):
     shop = models.ForeignKey(
         Shop,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name='sales_stats',
         help_text='所屬商店',
-        default=1,
+        null=True,
+        blank=True,
     )
-    total_sales_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    total_sales_amount = models.DecimalField(max_digits=12, decimal_places=2, default=de_zero)
     total_qty = models.PositiveIntegerField(default=0)
     total_orders = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)

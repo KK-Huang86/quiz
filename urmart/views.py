@@ -51,7 +51,6 @@ class OrderViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)  # 驗證會員是否有效，觸發所有 validate方法
-
         order = serializer.save()  # 呼叫 serializer 的 create 方法
         response_serializer = self.get_serializer(order)  # 包含嵌套資料
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)

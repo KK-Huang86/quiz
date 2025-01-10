@@ -31,7 +31,7 @@ def check_vip_identity(view_func):
             return Response({'error': '會員不存在'}, status=status.HTTP_404_NOT_FOUND)
 
         # 遍歷 items 中的每個商品進行檢查
-        items = data.get('items', [])
+        items = data.get('items', '')
         if not items:
             return Response(
                 {'error': '訂單項目缺失'}, status=status.HTTP_400_BAD_REQUEST
