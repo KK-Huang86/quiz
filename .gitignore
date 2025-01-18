@@ -4,7 +4,6 @@ node_modules/
 static/styles/
 static/scripts/
 datafiles/
-staticfiles/
 Urmartfiles/
 dbfiles/
 .env
