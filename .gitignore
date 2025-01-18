@@ -13,4 +13,3 @@ db.sqlite3
 core/settings_local.py
 .coverage
 *.dot
-*.png
